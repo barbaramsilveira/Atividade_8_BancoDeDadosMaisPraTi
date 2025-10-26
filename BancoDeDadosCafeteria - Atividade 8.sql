@@ -64,23 +64,23 @@ VALUES (8, 'Sanduíche simples', 'Pão de forma, queijo, presunto e requeijão',
 -- Itens da Comanda
 INSERT INTO Item_Comanda (id_item_comanda, quantidade, id_comanda, id_cardapio)
 VALUES
--- Comanda 1 (Amelie, 2025-10-12): Mais de um item (para teste Q4)
+-- Comanda 1 (Amelie, 2025-10-12)
 (1, 2, 1, 1),
-(2, 1, 1, 9),
+(2, 1, 1, 3),
 
 -- Comanda 2 (Charlotte, 2025-10-12)
 (3, 1, 2, 3),
 
 -- Comanda 3 (Ana, 2025-10-13)
-(4, 1, 3, 12),
-(5, 3, 3, 7),
+(4, 1, 3, 2),
+(5, 3, 3, 1),
 
 -- Comanda 4 (Duda, 2025-10-19)
-(6, 1, 4, 10),
-(7, 2, 4, 6),
+(6, 1, 4, 1),
+(7, 2, 4, 3),
 
 -- Comanda 5 (Beatriz, 2025-10-19)
-(9, 1, 5, 11);
+(9, 1, 5, 4);
 
 -- CONSULTAS:
 
@@ -93,9 +93,94 @@ ORDER BY
     nome_item;
 
 -- 2) Ordenar por data, código e por nome do café:
-	
+
+SELECT 
+    comanda.id_comanda,
+    comanda.data,
+    comanda.nr_mesa,
+    comanda.nome_cliente,
+    cardapio.nome_item,
+    cardapio.descricao,
+    item_comanda.quantidade,
+    cardapio.preco_unitario,
+    (item_comanda.quantidade * cardapio.preco_unitario) AS preco_total
+FROM 
+    Comanda comanda
+JOIN 
+    Item_Comanda item_comanda 
+    ON comanda.id_comanda = item_comanda.id_comanda
+JOIN 
+    Cardapio cardapio 
+    ON item_comanda.id_cardapio = cardapio.id_cardapio
+ORDER BY 
+    comanda.data,
+    comanda.id_comanda,
+    cardapio.nome_item;
 -- 3) Listar todas as comandas e mostrar o valor total da comanda, ordenando por data a listagem:
+SELECT 
+    comanda.id_comanda,
+    comanda.nome_cliente,
+    comanda.nr_mesa,
+    comanda.data,
+    SUM(item_comanda.quantidade * cardapio.preco_unitario) AS total_comanda
+FROM 
+    Comanda comanda
+JOIN 
+    Item_Comanda item_comanda 
+    ON comanda.id_comanda = item_comanda.id_comanda
+JOIN 
+    Cardapio cardapio 
+    ON item_comanda.id_cardapio = cardapio.id_cardapio
+GROUP BY 
+    comanda.id_comanda,
+    comanda.nome_cliente,
+    comanda.nr_mesa,
+    comanda.data
+ORDER BY 
+    comanda.data;
+
 
 -- 4) Mesma listagem das comandas da questão anterior, mas trazendo apenas as comandas que possuem mais do que um tipo de café na comanda:
 
+SELECT 
+    comanda.id_comanda,
+    comanda.nome_cliente,
+    comanda.nr_mesa,
+    comanda.data,
+    SUM(item_comanda.quantidade * cardapio.preco_unitario) AS total_comanda,
+    COUNT(DISTINCT cardapio.id_cardapio) AS qtd_itens
+FROM 
+    Comanda comanda
+JOIN 
+    Item_Comanda item_comanda 
+    ON comanda.id_comanda = item_comanda.id_comanda
+JOIN 
+    Cardapio cardapio 
+    ON item_comanda.id_cardapio = cardapio.id_cardapio
+GROUP BY 
+    comanda.id_comanda,
+    comanda.nome_cliente,
+    comanda.nr_mesa,
+    comanda.data
+HAVING 
+    COUNT(DISTINCT cardapio.id_cardapio) > 1
+ORDER BY 
+    comanda.data;
+
 -- 5) Total de faturamento por data, ordenando por data a consulta:
+
+SELECT 
+    comanda.data,
+    SUM(item_comanda.quantidade * cardapio.preco_unitario) AS faturamento_total
+FROM 
+    Comanda comanda
+JOIN 
+    Item_Comanda item_comanda 
+    ON comanda.id_comanda = item_comanda.id_comanda
+JOIN 
+    Cardapio cardapio 
+    ON item_comanda.id_cardapio = cardapio.id_cardapio
+GROUP BY 
+    comanda.data
+ORDER BY 
+    comanda.data;
